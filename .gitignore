@@ -1,0 +1,6 @@
+# Build Artifacts
+target/
+
+# IntelliJ IDEA Project Files
+*.iml
+.idea
