@@ -56,6 +56,7 @@ public class RemoteQueueMDB implements MessageListener {
     private static final String MESSAGE_CONSUMER_DELAY = "ConsumerDelay";
     private final static Logger LOG = Logger.getLogger(RemoteQueueMDB.class);
     private static final AtomicInteger mdbCnt = new AtomicInteger(0);
+    private int recvMsgCnt = 0;
     private int msgCnt = 0;
     private int mdbID = 0;
     private TextMessage txtMsg = null;
@@ -80,6 +81,14 @@ public class RemoteQueueMDB implements MessageListener {
      */
     @Override
     public void onMessage(Message message) {
+        recvMsgCnt++;
+        if (recvMsgCnt % 2 == 0) {
+            // Refuse any other message and expect it to be redelivered ...
+            LOG.debugf("MDB[%d] Refuse Received Message ...", mdbID);
+            msgCnt++;
+            throw new RuntimeException("Message refused!");
+        }
+
         try (QueueConnection queueConnection = qcf.createQueueConnection("guest", "guest");
                 QueueSession queueSession = queueConnection.createQueueSession(true, Session.SESSION_TRANSACTED);
                 QueueSender queueSender = queueSession.createSender(outQueue)) {
